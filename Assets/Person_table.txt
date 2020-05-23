@@ -1,0 +1,22 @@
+{
+    "rows": [
+        {
+            "prettyName": "Ben",
+            "uid": 0,
+            "nickName": "Ben le ouf",
+            "age": 30,
+            "personalityType": 1,
+            "height": 187,
+            "siblings": [
+                {
+                    "uid": 0
+                }
+            ],
+            "buildings": {
+                "guid": "",
+                "friendlyName": ""
+            }
+        }
+    ],
+    "nextId": 1
+}
