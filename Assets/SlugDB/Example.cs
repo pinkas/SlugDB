@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using SlugDB;
+using UnityEngine;
 
 [Serializable, InlineProperty, HideReferenceObjectPicker]
 public class Person : Row
@@ -17,9 +18,15 @@ public class Person : Row
 
     public ResourcesReference buildings;
 
+    [Button]
+    public void Delete()
+    {
+        Table<Person>.keysDeleted.Add(prettyName);
+        Table<Person>.SaveToDisk();
+    }
+    
     public void Save()
     {
-        Table<Person>.SaveToDisk();
     }
 }
 

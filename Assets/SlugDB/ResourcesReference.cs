@@ -68,9 +68,13 @@ public class ResourcesReference
     void BuildResourcesPath ()
     {
         string projectPath = AssetDatabase.GetAssetPath(assetReference);
-        friendlyName = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(projectPath).name;
-        guid = AssetDatabase.AssetPathToGUID(projectPath);
-        // the whole point is not to hold a reference to the asset
+        var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(projectPath);
+        if (asset != null)
+        {
+            friendlyName = asset.name;
+            guid = AssetDatabase.AssetPathToGUID(projectPath);
+        }
+        
         assetReference = null;
     }
 

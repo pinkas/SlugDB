@@ -5,6 +5,7 @@ using Sirenix.Utilities.Editor;
 using System.IO;
 using UnityEditor;
 using SlugDB;
+using UnityEngine;
 
 public class Tester : OdinEditorWindow
 {
@@ -15,11 +16,12 @@ public class Tester : OdinEditorWindow
         window.position = GUIHelper.GetEditorWindowRect().AlignCenter(800, 500);
     }
 
-    [Button]
-    public static void Add1000RandomsToDb()
+    [SerializeField, InlineButton(nameof(Add1000RandomsToDb))] int quantityToAddToDb = 0;
+
+    public void Add1000RandomsToDb()
     {
 
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < quantityToAddToDb; i++)
         {
             Person person = new Person();
             person.age = UnityEngine.Random.Range(1, 99);
@@ -28,8 +30,11 @@ public class Tester : OdinEditorWindow
             person.height = UnityEngine.Random.Range(30, 210);
           
             person.SetUid(Table<Person>.Instance.NextId);
+            Table<Person>.keysAdded.Add(person, person.prettyName);
             Table<Person>.Instance.rows.Add(person);
         }
+        Table<Person>.SaveToDisk();
+        Table<Person>.Instance.rows.Clear();
 
         //foreach(Person person in DbList<Person>.Instance.value)
     }
@@ -38,6 +43,9 @@ public class Tester : OdinEditorWindow
     public static void UnloadPerson()
     {
         Table<Person>.Unload();
+
+        Person ben = Table<Person>.Find("ben", false);
+        Debug.Log(ben.age);
     }
 
 }
