@@ -16,8 +16,12 @@ public class Tester : OdinEditorWindow
         window.position = GUIHelper.GetEditorWindowRect().AlignCenter(800, 500);
     }
 
-    [SerializeField, InlineButton(nameof(Add1000RandomsToDb))] int quantityToAddToDb = 0;
+    [SerializeField]
+    SaveAlgorythm saveAlgo;
 
+    [SerializeField, InlineButton(nameof(Add1000RandomsToDb))]
+    int quantityToAddToDb = 0;
+    
     public void Add1000RandomsToDb()
     {
 
@@ -29,12 +33,11 @@ public class Tester : OdinEditorWindow
             person.nickName = Path.GetTempFileName();
             person.height = UnityEngine.Random.Range(30, 210);
           
-            person.SetUid(Table<Person>.Instance.NextId);
+            person.SetUid(Table<Person>.NextId);
             Table<Person>.keysAdded.Add(person, person.prettyName);
-            Table<Person>.Instance.rows.Add(person);
+            Table<Person>.Rows.Add(person);
         }
-        Table<Person>.SaveToDisk();
-        Table<Person>.Instance.rows.Clear();
+        Table<Person>.SaveToDisk(SaveAlgorythm.Legacy);
 
         //foreach(Person person in DbList<Person>.Instance.value)
     }

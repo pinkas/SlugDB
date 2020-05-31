@@ -32,7 +32,7 @@ public class SlugDBBrowser : OdinMenuEditorWindow
     protected override OdinMenuTree BuildMenuTree()
     {
         BuildTree();
-        tree.Selection.SelectionChanged += OnSelectionChanged;
+        //tree.Selection.SelectionChanged += OnSelectionChanged;
         return tree;
     }
 
@@ -51,17 +51,18 @@ public class SlugDBBrowser : OdinMenuEditorWindow
 
     private static void Add<T>() where T : Row
     {
-        string className = typeof(T).ToString();
         string tableName = Table<T>.Name;
 
+        Table<T>.Load();
 
-        foreach (string key in Table<T>.GetAllKeys())
+        foreach (T row in Table<T>.Rows)
         {
-            if (key != "")
+            if (row != null)
             {
-                tree.Add($"{tableName}/{key}" , className);
+                tree.Add($"{tableName}/{row.prettyName}" , row);
             }
         }
+
         tree.Add(tableName, new AddRow<T>());
     }
 

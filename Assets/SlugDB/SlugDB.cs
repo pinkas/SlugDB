@@ -6,8 +6,8 @@ using UnityEditor;
 using System.Linq;
 using System.IO;
 using System;
-using Newtonsoft.Json;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace SlugDB
 {
@@ -24,19 +24,19 @@ namespace SlugDB
             // TODO what should it be called? key ? prettyName?
             newRow.prettyName = key;
             //newRow.SetUid(nextId);
-            Table<T>.Instance.rows.Add(newRow);
+            Table<T>.Rows.Add(newRow);
 
             // TODO do I need uids?
             //nextId++;
 
             Table<T>.keysAdded.Add(newRow, key);
-            Table<T>.SaveToDisk();
+            Table<T>.SaveToDisk(SaveAlgorythm.Legacy);
         }
 
         [Button]
-        public void Save()
+        public void Save(SaveAlgorythm saveAlgorythm)
         {
-            Table<T>.SaveToDisk();
+            Table<T>.SaveToDisk(saveAlgorythm);
         }
     }
 
@@ -79,9 +79,9 @@ namespace SlugDB
         [VerticalGroup("1/1")]
         [ShowInInspector, ReadOnly]
         //TODO really not performance friendly
-        private string prettyName => Table<T>.Instance.rows.FirstOrDefault(p => p.Uid == uid).prettyName;
+        private string prettyName => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid).prettyName;
 
-        public T Get => Table<T>.Instance.rows.FirstOrDefault(p => p.Uid == uid);
+        public T Get => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid);
 
 #if UNITY_EDITOR
         [VerticalGroup("1/2")]
@@ -111,25 +111,13 @@ namespace SlugDB
     {
         protected Table()
         {
-            rows = new List<T>();
+            rows = new RowList<T>();
         }
 
-        public static Table<T> Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    //instance = Load();
-                    instance = new Table<T>();
-                }
-                return instance;
-            }
-        }
-        static Table<T> instance;
+        [ShowInInspector, ListDrawerSettings(CustomAddFunction = nameof(OnRowAdded))]
+        private static RowList<T> rows = new RowList<T>();
+        public static List<T> Rows => rows.rows;
 
-        [ShowInInspector,  ListDrawerSettings(CustomAddFunction = nameof(OnRowAdded))]
-        public List<T> rows = new List<T>();
 
         public static Dictionary<T, string> keysAdded = new Dictionary<T, string>();
         public static List<string> keysDeleted = new List<string>();
@@ -144,12 +132,8 @@ namespace SlugDB
         public static string Name => theName;
         private static string theName = typeof(T) + "Table";
 
-        public static Table<T> Load()
+        public static void Load()
         {
-            if (instance != null)
-            {
-                return instance;
-            }
 
 #if UNITY_EDITOR
          //   AssemblyReloadEvents.beforeAssemblyReload += SaveAndExport;
@@ -162,9 +146,7 @@ namespace SlugDB
             }
 
             string serializedList = File.ReadAllText(FilePath);
-            instance = JsonUtility.FromJson<Table<T>>(serializedList) ?? new Table<T>();
-
-            return instance;
+            rows = JsonUtility.FromJson<RowList<T>>(serializedList) ?? new RowList<T>();
         }
 
         public static T Find(string name, bool cache)
@@ -172,9 +154,9 @@ namespace SlugDB
             //T theObject = Instance.rows.FirstOrDefault(row => row != null && row.prettyName == name);
 
             T theObject = null;
-            for (int i = 0; i < Instance.rows.Count; i++)
+            for (int i = 0; i < Rows.Count; i++)
             {
-                T row = Instance.rows[i];
+                T row = Rows[i];
                 if (row != null && row.prettyName == name)
                 {
                     theObject = row;
@@ -183,11 +165,8 @@ namespace SlugDB
 
             if (theObject != null)
             {
-                Debug.Log("was cached!");
                 return theObject;
             }
-
-            int objectStartingLine = 0;
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -216,9 +195,9 @@ namespace SlugDB
                 }
             }
 
-            if (cache && !Instance.rows.Contains(theObject))
+            if (cache && !Rows.Contains(theObject))
             {
-                Instance.rows.Add(theObject);
+                Rows.Add(theObject);
             }
 
             return theObject;
@@ -258,63 +237,69 @@ namespace SlugDB
 
         public static void Unload()
         {
-            instance = null;
+            Rows.Clear();
         }
 
-        public int NextId => nextId;
+        public static int NextId => nextId;
 
         [SerializeField, ReadOnly]
-        private int nextId;
+        private static int nextId;
 
 #if UNITY_EDITOR
         private void OnRowAdded()
         {
             T member = (T) Activator.CreateInstance(typeof(T));
             member.SetUid(nextId);
-            rows.Add(member);
+            Rows.Add(member);
 
             nextId++;
         }
 
         [Button]
-        public static void SaveToDisk()
+        public static void SaveToDiskGen1()
+        {
+            string serializedDb = JsonUtility.ToJson(Rows, true);
+            File.WriteAllText(Table<Person>.FilePath, serializedDb);
+        }
+
+        [Button]
+        public static void SaveToDisk(SaveAlgorythm saveAlgorythm)
         {
             DateTime time = DateTime.Now;
 
-            // easy way
-            //string serializedDb = JsonUtility.ToJson(instance, true);
-            //File.WriteAllText(Table<Person>.FilePath, serializedDb);
-            //AssetDatabase.SaveAssets();
-
             File.Delete(TempFilePath);
-            using (FileStream fs = File.Open(TempFilePath, FileMode.OpenOrCreate))
-            using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8, 1024*4))
-            using (JsonWriter writer = new JsonTextWriter(sw))
+
+            List<string> allKeys = GetAllKeys();
+
+            if (saveAlgorythm == SaveAlgorythm.Legacy)
             {
-                writer.Formatting = Formatting.Indented;
+                string serializedDb = JsonUtility.ToJson(rows, prettyPrint: true);
 
-                writer.WriteStartObject();
+                var stream = File.Create(TempFilePath);
+                stream.Dispose();
+                
+                File.WriteAllText(TempFilePath, serializedDb);
+            }
+            else if (saveAlgorythm == SaveAlgorythm.utf)
+            {
+                var stream = File.Create(TempFilePath);
 
-                writer.WritePropertyName("nextId");
-                writer.WriteValue(Instance.nextId);
-
-                writer.WritePropertyName("rows");
-                writer.WriteStartArray();
-
-                // TODO
-                // get the list of what's dirty
-                // you stream to it 
-
-                List<string> allKeys = GetAllKeys();
+                Utf8Json.JsonWriter jsonWriter = new Utf8Json.JsonWriter();
+                jsonWriter.WriteBeginObject();
+                //jsonWriter.WritePropertyName("nextId");
+                //jsonWriter.WriteString(NextId.ToString());
+                //jsonWriter.WriteValueSeparator();
+                jsonWriter.WritePropertyName("rows");
+                jsonWriter.WriteBeginArray();
 
                 for (int i = 0; i < allKeys.Count; i++)
                 {
                     string key = allKeys[i];
 
                     T theRow = null;
-                    foreach(T aRow in Instance.rows)
+                    foreach (T aRow in Rows)
                     {
-                        if(aRow != null && aRow.prettyName == key)
+                        if (aRow != null && aRow.prettyName == key)
                         {
                             theRow = aRow;
                             break;
@@ -328,29 +313,78 @@ namespace SlugDB
 
                     if (theRow != null)
                     {
-                        string rowSerialized = JsonConvert.SerializeObject(theRow, Formatting.Indented);
-                        writer.WriteRaw(rowSerialized);
+                        var rowSerialized = Utf8Json.JsonSerializer.Serialize<T>(theRow);
+                        jsonWriter.WriteRaw(rowSerialized);
                         if (i != allKeys.Count - 1)
                         {
-                            writer.WriteRaw(",");
+                            jsonWriter.WriteValueSeparator();
                         }
                     }
-/*
-                    T row = Instance.rows.SingleOrDefault(roow => roow != null && roow.prettyName == key) ?? Find(key, false);
-                    if (row != null)
-                    {
-                        string rowSerialized = JsonConvert.SerializeObject(row, Formatting.Indented);
-                        writer.WriteRaw(rowSerialized);
-                        if (i != allKeys.Count - 1)
-                        {
-                            writer.WriteRaw(",");
-                        }
-                    }
-*/
                 }
 
-                writer.WriteEnd();
-                writer.WriteEndObject();
+                jsonWriter.WriteEndArray();
+                jsonWriter.WriteEndObject();
+
+                byte[] bytes = jsonWriter.ToUtf8ByteArray();
+
+                stream.Write(bytes, 0, bytes.Length);
+                stream.Dispose();
+            }
+            else
+            {
+                using (FileStream fs = File.Open(TempFilePath, FileMode.OpenOrCreate))
+                using (StreamWriter sw = new StreamWriter(fs))
+                using (JsonWriter writer = new JsonTextWriter(sw))
+                {
+                    writer.Formatting = Formatting.Indented;
+
+                    writer.WriteStartObject();
+
+                    //writer.WritePropertyName("nextId");
+                    //writer.WriteValue(nextId);
+
+                    writer.WritePropertyName("rows");
+                    writer.WriteStartArray();
+
+                    // TODO
+                    // get the list of what's dirty
+                    // you stream to it 
+
+                    for (int i = 0; i < allKeys.Count; i++)
+                    {
+                        string key = allKeys[i];
+
+                        T theRow = null;
+                        foreach(T aRow in Rows)
+                        {
+                            if(aRow != null && aRow.prettyName == key)
+                            {
+                                theRow = aRow;
+                                break;
+                            }
+                        }
+
+                        if (theRow == null)
+                        {
+                            theRow = Find(key, false);
+                        }
+
+                        if (theRow != null)
+                        {
+                            string rowSerialized = JsonConvert.SerializeObject(theRow, Formatting.Indented);
+                            //string rowSerialized = JsonSerializer.ToJsonString<T>(theRow);
+                            writer.WriteRaw(rowSerialized);
+                            if (i != allKeys.Count - 1)
+                            {
+                                writer.WriteRaw(",");
+                            }
+                        }
+                    }
+
+                    writer.WriteEnd();
+                    writer.WriteEndObject();
+                }
+
             }
 
             File.Delete(FilePath);
@@ -375,7 +409,7 @@ namespace SlugDB
         [Button]
         public static void SaveAndExport()
         {
-            SaveToDisk();
+            SaveToDisk(SaveAlgorythm.Legacy);
 
             string className = typeof(T).ToString();
 
@@ -385,7 +419,7 @@ namespace SlugDB
             classFile += $"public class {className}Table : Table<{className}>\n";
             classFile += "{\n";
 
-            foreach(Row item in Instance.rows)
+            foreach(Row item in Rows)
             {
                 if ( string.IsNullOrEmpty(item.prettyName))
                 {
@@ -402,7 +436,21 @@ namespace SlugDB
         }
 #endif
     }
+    
+    [Serializable]
+    public class RowList<T> where T : Row
+    {
+        public List<T> rows = new List<T>();
+    }
+
+    public enum SaveAlgorythm
+    {
+        Legacy,
+        net,
+        utf
+    }
 
 }
+
 
 
