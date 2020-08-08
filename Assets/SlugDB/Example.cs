@@ -22,7 +22,7 @@ public class Person : Row
     public void Delete()
     {
         Table<Person>.keysDeleted.Add(prettyName);
-        Table<Person>.SaveToDisk();
+        Table<Person>.SaveToDisk(SaveAlgorythm.Legacy);
     }
     
     public void Save()

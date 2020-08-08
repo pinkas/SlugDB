@@ -1,11 +1,7 @@
 ﻿using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities.Editor;
-using Sirenix.Utilities;
 using UnityEditor;
-using SlugDB;
 using System.Linq;
-using System;
-using UnityEngine;
+using SlugDB;
 
 public class SlugDBBrowser : OdinMenuEditorWindow
 {
@@ -15,8 +11,7 @@ public class SlugDBBrowser : OdinMenuEditorWindow
     [MenuItem("Db/Browser")]
     public static void Open()
     {
-        OdinMenuEditorWindow window = GetWindow<SlugDBBrowser>();
-        //window.position = GUIHelper.GetEditorWindowRect().AlignCenter(800, 500);
+        GetWindow<SlugDBBrowser>();
     }
 
     public static void ForceClose()
@@ -43,27 +38,32 @@ public class SlugDBBrowser : OdinMenuEditorWindow
         tree.UpdateMenuTree();
         tree.Config.DrawSearchToolbar = true;
 
+        // TODO - Whenever creating a Table it needs to be explicitely added here. Probably avoidable.
 
-        Add<Person>();
+        AddTable<Person>();
 
+        // super slow when dealing with big tables
         //tree.SortMenuItemsByName();
     }
 
-    private static void Add<T>() where T : Row
+    private static void AddTable<T>() where T : Row
     {
         string tableName = Table<T>.Name;
 
         Table<T>.Load();
 
+        // In the tree the 'root' for each table is a utility class that allows you to add rows to the table
+        tree.Add(tableName, new AddRow<T>());
+
+        // Add the rows of the table to the Odin tree
         foreach (T row in Table<T>.Rows)
         {
             if (row != null)
             {
-                tree.Add($"{tableName}/{row.prettyName}" , row);
+                string rowPath = $"{tableName}/{row.prettyName}";
+                tree.Add(rowPath, row);
             }
         }
-
-        tree.Add(tableName, new AddRow<T>());
     }
 
     //TODO duplicate

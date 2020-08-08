@@ -1,111 +1,18 @@
-﻿using Sirenix.OdinInspector.Editor;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System.IO;
 using System;
-using System.Text;
-using Newtonsoft.Json;
 
 namespace SlugDB
 {
-    [HideReferenceObjectPicker, HideLabel, ShowInInspector, Serializable]
-    public class AddRow<T> where T : Row
-    {
-        public string key;
-        public int uid;
-
-        [Button]
-        public void Add()
-        {
-            T newRow = (T)Activator.CreateInstance(typeof(T));
-            // TODO what should it be called? key ? prettyName?
-            newRow.prettyName = key;
-            //newRow.SetUid(nextId);
-            Table<T>.Rows.Add(newRow);
-
-            // TODO do I need uids?
-            //nextId++;
-
-            Table<T>.keysAdded.Add(newRow, key);
-            Table<T>.SaveToDisk(SaveAlgorythm.Legacy);
-        }
-
-        [Button]
-        public void Save(SaveAlgorythm saveAlgorythm)
-        {
-            Table<T>.SaveToDisk(saveAlgorythm);
-        }
-    }
-
-    [Serializable]
-    public class Row
-    {
-        [DelayedProperty, ReadOnly, OnValueChanged("OnPrettyNameChanged"), HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
-        public string prettyName;
-
-        //TODO add validation
-        [ReadOnly, SerializeField, TableColumnWidth(10), Required]
-        [HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
-        protected int uid;
-        public int Uid => uid;
-
-
-        public void SetUid(int uid)
-        {
-            if (this.uid == 0)
-            {
-                this.uid = uid;
-            }
-        }
-
-        private void OnPrettyNameChanged(string prettyName)
-        {
-            //Debug.Log(this.GetType().Name );
-        }
-    }
-
-
-    [Serializable, InlineProperty, HideReferenceObjectPicker]
-    public class RowReference<T> where T : Row
-    {
-        [HorizontalGroup("1")]
-        [VerticalGroup("1/1")]
-        [SerializeField, ReadOnly]
-        private int uid;
-        
-        [VerticalGroup("1/1")]
-        [ShowInInspector, ReadOnly]
-        //TODO really not performance friendly
-        private string prettyName => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid).prettyName;
-
-        public T Get => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid);
-
-#if UNITY_EDITOR
-        [VerticalGroup("1/2")]
-        [Button(18)]
-        public void Pick()
-        {
-            GenericSelector<string> selector = new GenericSelector<string>("", false, item => item, Table<T>.GetAllKeys());
-
-            var window = selector.ShowInPopup();
-            selector.SelectionConfirmed += selection => this.uid = Table<T>.Find(selection.FirstOrDefault(), true).Uid;
-            selector.EnableSingleClickToSelect();
-        }
-
-        [VerticalGroup("1/2")]
-        [Button(18)]
-        public void Focus()
-        {
-            var item = SlugDBBrowser.Tree.GetMenuItem($"{typeof(T)}Table/{prettyName}");
-            SlugDBBrowser.Tree.Selection.Clear();
-            SlugDBBrowser.Tree.Selection.Add(item);
-        }
-#endif    
-    }
-
+    /// <summary>
+    /// @@@@@@@ TODO Add description TODO @@@@@@@
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable, InlineProperty, HideReferenceObjectPicker, HideDuplicateReferenceBox]
     public class Table <T> where T : Row
     {
@@ -132,6 +39,8 @@ namespace SlugDB
         public static string Name => theName;
         private static string theName = typeof(T) + "Table";
 
+
+        // TODO talk about the fact that here it's loading everything as opposed to the GetAllKeys approach which streams through the fill to 'just' get the keys
         public static void Load()
         {
 
@@ -451,6 +360,4 @@ namespace SlugDB
     }
 
 }
-
-
 
