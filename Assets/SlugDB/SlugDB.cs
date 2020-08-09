@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Sirenix.OdinInspector;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System.IO;
 using System;
+using Newtonsoft.Json;
+using Utf8Json.Resolvers;
 
 namespace SlugDB
 {
@@ -21,11 +22,11 @@ namespace SlugDB
             rows = new RowList<T>();
         }
 
-        [ShowInInspector, ListDrawerSettings(CustomAddFunction = nameof(OnRowAdded))]
         private static RowList<T> rows = new RowList<T>();
         public static List<T> Rows => rows.rows;
 
 
+        // TODO better name for keysAdded and keysDeleted - did that 2 months ago and looking at the name I have no idea what it actually does
         public static Dictionary<T, string> keysAdded = new Dictionary<T, string>();
         public static List<string> keysDeleted = new List<string>();
 
@@ -54,8 +55,11 @@ namespace SlugDB
                 stream.Dispose();
             }
 
+
+
             string serializedList = File.ReadAllText(FilePath);
-            rows = JsonUtility.FromJson<RowList<T>>(serializedList) ?? new RowList<T>();
+            rows = Utf8Json.JsonSerializer.Deserialize<RowList<T>>( serializedList, StandardResolver.AllowPrivate ) ?? new RowList<T>();
+            //rows = JsonUtility.FromJson<RowList<T>>(serializedList) ?? new RowList<T>();
         }
 
         public static T Find(string name, bool cache)
@@ -66,7 +70,7 @@ namespace SlugDB
             for (int i = 0; i < Rows.Count; i++)
             {
                 T row = Rows[i];
-                if (row != null && row.prettyName == name)
+                if (row != null && row.PrettyName == name)
                 {
                     theObject = row;
                 }
@@ -96,7 +100,7 @@ namespace SlugDB
                     if (reader.Depth == 2 && reader.TokenType == JsonToken.StartObject)
                     {
                         theObject = serializer.Deserialize<T>(reader);
-                        if (theObject.prettyName == name)
+                        if (theObject.PrettyName == name)
                         {
                             break;
                         }
@@ -149,20 +153,8 @@ namespace SlugDB
             Rows.Clear();
         }
 
-        public static int NextId => nextId;
-
-        [SerializeField, ReadOnly]
-        private static int nextId;
 
 #if UNITY_EDITOR
-        private void OnRowAdded()
-        {
-            T member = (T) Activator.CreateInstance(typeof(T));
-            member.SetUid(nextId);
-            Rows.Add(member);
-
-            nextId++;
-        }
 
         [Button]
         public static void SaveToDiskGen1()
@@ -208,7 +200,7 @@ namespace SlugDB
                     T theRow = null;
                     foreach (T aRow in Rows)
                     {
-                        if (aRow != null && aRow.prettyName == key)
+                        if (aRow != null && aRow.PrettyName == key)
                         {
                             theRow = aRow;
                             break;
@@ -222,7 +214,7 @@ namespace SlugDB
 
                     if (theRow != null)
                     {
-                        var rowSerialized = Utf8Json.JsonSerializer.Serialize<T>(theRow);
+                        var rowSerialized = Utf8Json.JsonSerializer.Serialize<T>(theRow, StandardResolver.AllowPrivate);
                         jsonWriter.WriteRaw(rowSerialized);
                         if (i != allKeys.Count - 1)
                         {
@@ -235,8 +227,9 @@ namespace SlugDB
                 jsonWriter.WriteEndObject();
 
                 byte[] bytes = jsonWriter.ToUtf8ByteArray();
-
+                bytes = Utf8Json.JsonSerializer.PrettyPrintByteArray(bytes);
                 stream.Write(bytes, 0, bytes.Length);
+
                 stream.Dispose();
             }
             else
@@ -266,7 +259,7 @@ namespace SlugDB
                         T theRow = null;
                         foreach(T aRow in Rows)
                         {
-                            if(aRow != null && aRow.prettyName == key)
+                            if(aRow != null && aRow.PrettyName == key)
                             {
                                 theRow = aRow;
                                 break;
@@ -316,10 +309,8 @@ namespace SlugDB
         }
 
         [Button]
-        public static void SaveAndExport()
+        public static void BuildKeysFile()
         {
-            SaveToDisk(SaveAlgorythm.Legacy);
-
             string className = typeof(T).ToString();
 
             string classFile = "using System.Linq;\n";
@@ -330,12 +321,12 @@ namespace SlugDB
 
             foreach(Row item in Rows)
             {
-                if ( string.IsNullOrEmpty(item.prettyName))
+                if ( string.IsNullOrEmpty(item.PrettyName))
                 {
                     continue;
                 }
 
-                classFile += $"    public static {className} {item.prettyName} => Table<{className}>.Find(\"{item.prettyName}\", false);\n";
+                classFile += $"    public static {className} {item.PrettyName} => Table<{className}>.Find(\"{item.PrettyName}\", false);\n";
             }
             classFile += "}\n";
 

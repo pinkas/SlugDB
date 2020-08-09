@@ -5,22 +5,23 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using System.Linq;
 using System;
+using UnityEngine.Events;
+using System.Collections.Generic;
 
 namespace SlugDB
 {
+    // TODO add validation
     [Serializable]
     public class Row
     {
-        [DelayedProperty, ReadOnly, OnValueChanged("OnPrettyNameChanged"), HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
-        // TODO what should it be called? key ? prettyName?
-        public string prettyName;
+        [SerializeField, ReadOnly, HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
+        protected string prettyName;
+        public string PrettyName => prettyName;
 
-        // TODO add validation
         [ReadOnly, SerializeField, TableColumnWidth(10), Required]
         [HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
-        protected int uid;
+        protected int uid = 0;
         public int Uid => uid;
-
 
         public void SetUid(int uid)
         {
@@ -28,11 +29,6 @@ namespace SlugDB
             {
                 this.uid = uid;
             }
-        }
-
-        private void OnPrettyNameChanged(string prettyName)
-        {
-            //Debug.Log(this.GetType().Name );
         }
     }
 
@@ -52,7 +48,7 @@ namespace SlugDB
         [VerticalGroup("1/1")]
         [ShowInInspector, ReadOnly]
         //TODO really not performance friendly
-        private string prettyName => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid).prettyName;
+        private string prettyName => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid).PrettyName;
 
         public T Get => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid);
 
@@ -81,20 +77,22 @@ namespace SlugDB
 
 #if UNITY_EDITOR
     /// <summary>
-    /// Pure editor class that allows you to add a row to your table in the Odin Tree window
+    /// Pure editor class that allows you to add/remove rows to/from your table in the Odin Tree window
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [HideReferenceObjectPicker, HideLabel, ShowInInspector, Serializable]
-    public class AddRow<T> where T : Row
+    public class RowFactory<T> where T : Row
     {
+        [BoxGroup("Add Row")]
         public string key;
+        [BoxGroup("Add Row")]
         public int uid;
 
-        [Button]
+        [Button, BoxGroup("Add Row"), EnableIf("@!string.IsNullOrEmpty(key)")]
         public void Add()
         {
-            T newRow = (T)Activator.CreateInstance(typeof(T));
-            newRow.prettyName = key;
+            T newRow = (T) Activator.CreateInstance(typeof(T), key);
+            //newRow.prettyName = key;
             //newRow.SetUid(nextId);
             Table<T>.Rows.Add(newRow);
 
@@ -105,10 +103,27 @@ namespace SlugDB
             Table<T>.SaveToDisk(SaveAlgorythm.Legacy);
         }
 
-        [Button]
+        [ShowInInspector, ValueDropdown(nameof(GetAllKeys)), BoxGroup("Delete Row")]
+        string keyToDelete;
+
+        [Button, EnableIf("@!string.IsNullOrEmpty(keyToDelete)"), BoxGroup("Delete Row")]
+        public void Delete()
+        {
+            Table<T>.keysDeleted.Add(keyToDelete);
+            Table<T>.SaveToDisk(SaveAlgorythm.utf);
+        }
+
+        [PropertySpace, PropertyOrder(10)]
+        [Button(30)]
         public void Save(SaveAlgorythm saveAlgorythm)
         {
             Table<T>.SaveToDisk(saveAlgorythm);
+            Table<T>.BuildKeysFile(); 
+        }
+
+        private List<string> GetAllKeys()
+        {
+            return Table<T>.GetAllKeys();
         }
     }
 #endif

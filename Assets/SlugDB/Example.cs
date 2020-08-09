@@ -1,42 +1,28 @@
-﻿using Sirenix.OdinInspector;
+﻿using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using System;
-using System.Collections.Generic;
 using SlugDB;
-using UnityEngine;
 
 [Serializable, InlineProperty, HideReferenceObjectPicker]
-public class Person : Row
+public partial class Person : Row
 {
-    [DelayedProperty, OnValueChanged("Save")]
     public string nickName;
     public int age;
-    public PersonalityType personalityType;
-    
     public int height;
-
     public List<PersonReference> siblings = new List<PersonReference>();
+}
 
-    public ResourcesReference buildings;
 
-    [Button]
-    public void Delete()
+// TODO have Row classes auto generated so that we avoid the following boiler plate code
+// The following needs to be added to all classes that derive from Row
+public partial class Person : Row
+{
+    public Person(string prettyName)
     {
-        Table<Person>.keysDeleted.Add(prettyName);
-        Table<Person>.SaveToDisk(SaveAlgorythm.Legacy);
-    }
-    
-    public void Save()
-    {
+        this.prettyName = prettyName;
     }
 }
 
 [Serializable, InlineProperty, HideReferenceObjectPicker, HideDuplicateReferenceBox]
 public class PersonReference : RowReference<Person> {}
-
-public enum PersonalityType
-{
-    Extra,
-    Regular,
-    Intra,
-    Crazy,
-}
+// That's it ... !

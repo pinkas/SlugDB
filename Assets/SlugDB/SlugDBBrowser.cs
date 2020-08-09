@@ -53,14 +53,14 @@ public class SlugDBBrowser : OdinMenuEditorWindow
         Table<T>.Load();
 
         // In the tree the 'root' for each table is a utility class that allows you to add rows to the table
-        tree.Add(tableName, new AddRow<T>());
+        tree.Add(tableName, new RowFactory<T>());
 
         // Add the rows of the table to the Odin tree
         foreach (T row in Table<T>.Rows)
         {
             if (row != null)
             {
-                string rowPath = $"{tableName}/{row.prettyName}";
+                string rowPath = $"{tableName}/{row.PrettyName}";
                 tree.Add(rowPath, row);
             }
         }
