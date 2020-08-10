@@ -30,14 +30,15 @@ namespace SlugDB
         public static List<string> keysDeleted = new List<string>();
 
         public static string FilePath => filePath;
-        private static string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table.txt");
+        private static readonly string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table.txt");
 
         public static string TempFilePath => tempFilePath;
-        private static string tempFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table_temp.txt");
+        private static readonly string tempFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table_temp.txt");
 
         public static string KeysPath => Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_keys.cs");
-        public static string Name => theName;
-        private static string theName = typeof(T) + "Table";
+
+        public static string Name => name;
+        private static readonly string name = typeof(T) + "Table";
 
 
         // TODO talk about the fact that here it's loading everything as opposed to the GetAllKeys approach which streams through the fill to 'just' get the keys
@@ -237,12 +238,7 @@ namespace SlugDB
             //TODO the path of the table should come from only place. duplicate
             //AssetDatabase.ImportAsset("Assets/" + typeof(T).ToString() + "_table.txt");
 
-            if (keysDeleted.Count > 0 || keysAdded.Count > 0)
-            {
-                // TODO is it ok to call SlugDBBrowser in from that class (ie calling an editor class)
-                SlugDBBrowser.ForceClose();
-                //SlugDBBrowser.Open();
-            }
+            SlugDBBrowser.Refresh();
 
             keysDeleted.Clear();
             keysAdded.Clear();
