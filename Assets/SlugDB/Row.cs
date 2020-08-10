@@ -5,7 +5,6 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using System.Linq;
 using System;
-using UnityEngine.Events;
 using System.Collections.Generic;
 
 namespace SlugDB
@@ -99,7 +98,6 @@ namespace SlugDB
             // TODO do I need uids?
             //nextId++;
 
-            Table<T>.keysAdded.Add(newRow, key);
             Table<T>.SaveToDisk(SaveAlgorythm.UnityJsonUtility);
         }
 
@@ -109,7 +107,6 @@ namespace SlugDB
         [Button, EnableIf("@!string.IsNullOrEmpty(keyToDelete)"), BoxGroup("Delete Row")]
         public void Delete()
         {
-            Table<T>.keysDeleted.Add(keyToDelete);
             Table<T>.SaveToDisk(SaveAlgorythm.utf);
         }
 

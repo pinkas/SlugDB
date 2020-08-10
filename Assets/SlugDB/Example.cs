@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Sirenix.OdinInspector;
+﻿using Sirenix.OdinInspector;
 using System;
 using SlugDB;
 
@@ -9,7 +8,7 @@ public partial class Person : Row
     public string nickName;
     public int age;
     public int height;
-    public List<PersonReference> siblings = new List<PersonReference>();
+    public PersonReference partner;
 }
 
 

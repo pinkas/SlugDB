@@ -25,8 +25,6 @@ public class Tester : OdinEditorWindow
     
     public void CreatePersonTableWithXentries()
     {
-        Table<Person>.keysAdded.Clear();
-        Table<Person>.keysDeleted = Table<Person>.GetAllKeys();
 
         for (int i = 0; i < quantityToAddToDb; i++)
         {
@@ -40,7 +38,6 @@ public class Tester : OdinEditorWindow
                 height = UnityEngine.Random.Range(30, 210),
             };
           
-            Table<Person>.keysAdded.Add(person, person.PrettyName);
             Table<Person>.Rows.Add(person);
         }
     

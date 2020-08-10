@@ -2,11 +2,9 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
 using System.IO;
 using System;
 using Newtonsoft.Json;
-using Utf8Json.Resolvers;
 
 namespace SlugDB
 {
@@ -25,18 +23,12 @@ namespace SlugDB
         public static List<T> Rows => rows.value;
         private static RowList<T> rows = new RowList<T>();
 
-        // TODO better name for keysAdded and keysDeleted - did that 2 months ago and looking at the name I have no idea what it actually does
-        public static Dictionary<T, string> keysAdded = new Dictionary<T, string>();
-        public static List<string> keysDeleted = new List<string>();
+        public static string TableFilePathAbsolute => tableFilePathAbsolute;
+        private static readonly string tableFilePathUnityProject = Path.Combine("Assets", typeof(T).ToString() + "_table.txt");
+        private static readonly string tableFilePathAbsolute = Path.Combine(Directory.GetCurrentDirectory(), tableFilePathUnityProject);
 
-        public static string FilePath => absoluteFilePath;
-        private static readonly string unityProjectFilePath = Path.Combine("Assets", typeof(T).ToString() + "_table.txt");
-        private static readonly string absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), unityProjectFilePath);
-
-        public static string TempFilePath => tempFilePath;
-        private static readonly string tempFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table_temp.txt");
-
-        public static string KeysPath => Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_keys.cs");
+        private static readonly string KeysFilePathUnityProject = Path.Combine("Assets", typeof(T).ToString() + "_keys.cs");
+        public static string KeysFilePathAbsolute => Path.Combine(Directory.GetCurrentDirectory(), KeysFilePathUnityProject);
 
         public static string Name => name;
         private static readonly string name = typeof(T) + "Table";
@@ -44,19 +36,17 @@ namespace SlugDB
 
         public static void Load()
         {
-
 #if UNITY_EDITOR
          //   AssemblyReloadEvents.beforeAssemblyReload += SaveAndExport;
 #endif
-            if (!File.Exists(FilePath))
+            if (!File.Exists(TableFilePathAbsolute))
             {
-                var stream = File.Create(FilePath);
+                var stream = File.Create(TableFilePathAbsolute);
                 stream.Dispose();
             }
 
-            string serializedList = File.ReadAllText(FilePath);
-            rows = Utf8Json.JsonSerializer.Deserialize<RowList<T>>( serializedList, StandardResolver.AllowPrivate ) ?? new RowList<T>();
-            //rows = JsonUtility.FromJson<RowList<T>>(serializedList) ?? new RowList<T>();
+            string serializedList = File.ReadAllText(TableFilePathAbsolute);
+            rows = JsonUtility.FromJson<RowList<T>>(serializedList) ?? new RowList<T>();
         }
 
         public static T Find(string name, bool cache)
@@ -80,20 +70,12 @@ namespace SlugDB
 
             JsonSerializer serializer = new JsonSerializer();
 
-            using (FileStream s = File.Open(FilePath, FileMode.Open))
+            using (FileStream s = File.Open(TableFilePathAbsolute, FileMode.Open))
             using (StreamReader sr = new StreamReader(s))
             using (JsonTextReader reader = new JsonTextReader(sr))
             {
                 while (reader.Read())
                 {
-                    //if (reader.Value != null && reader.TokenType == JsonToken.PropertyName && reader.Value is string keyName && keyName == "prettyName")
-                    //{
-                    //    reader.Read();
-                    //    if (reader.Value is string value && value == name)
-                    //    {
-                    //        break;
-                    //    }
-                    //}
                     if (reader.Depth == 2 && reader.TokenType == JsonToken.StartObject)
                     {
                         theObject = serializer.Deserialize<T>(reader);
@@ -118,12 +100,12 @@ namespace SlugDB
             List<string> keys = new List<string>();
 
             // TODO caching even with newKeys!
-            if (!File.Exists(FilePath) )
+            if (!File.Exists(TableFilePathAbsolute) )
             {
                 return keys;
             }
 
-            using (FileStream s = File.Open(FilePath, FileMode.Open))
+            using (FileStream s = File.Open(TableFilePathAbsolute, FileMode.Open))
             using (StreamReader sr = new StreamReader(s))
             using (JsonTextReader reader = new JsonTextReader(sr))
             {
@@ -137,12 +119,7 @@ namespace SlugDB
                 }
             }
 
-            foreach(KeyValuePair<T, string> kvp in keysAdded)
-            {
-                keys.Add(kvp.Value);
-            }
-
-            return keys.Except(keysDeleted).ToList();
+            return keys;
         }
 
         public static void Unload()
@@ -157,86 +134,23 @@ namespace SlugDB
         public static void SaveToDiskGen1()
         {
             string serializedDb = JsonUtility.ToJson(Rows, true);
-            File.WriteAllText(FilePath, serializedDb);
+            File.WriteAllText(TableFilePathAbsolute, serializedDb);
         }
 
         [Button]
         public static void SaveToDisk(SaveAlgorythm saveAlgorythm)
         {
-            File.Delete(TempFilePath);
-
-            List<string> allKeys = GetAllKeys();
-
+            // other save styles on the 'experimental' branch
             if (saveAlgorythm == SaveAlgorythm.UnityJsonUtility)
             {
-
-                var stream = File.Create(TempFilePath);
-                stream.Dispose();
-
                 string serializedDb = JsonUtility.ToJson(rows, prettyPrint: true);
-                File.WriteAllText(TempFilePath, serializedDb);
-            }
-            else if (saveAlgorythm == SaveAlgorythm.utf)
-            {
-                Utf8Json.JsonWriter jsonWriter = new Utf8Json.JsonWriter();
-                jsonWriter.WriteBeginObject();
-                //jsonWriter.WritePropertyName("nextId");
-                //jsonWriter.WriteString(NextId.ToString());
-                //jsonWriter.WriteValueSeparator();
-                jsonWriter.WritePropertyName("rows");
-                jsonWriter.WriteBeginArray();
-
-                for (int i = 0; i < allKeys.Count; i++)
-                {
-                    string key = allKeys[i];
-
-                    T row = null;
-                    // Get the reference of the row from memory (if available)
-                    foreach (T cachedRow in Rows)
-                    {
-                        if (cachedRow != null && cachedRow.PrettyName == key)
-                        {
-                            row = cachedRow;
-                            break;
-                        }
-                    }
-
-                    // if the row is not cached then go through the text file (slow)
-                    if (row == null)
-                    {
-                        row = Find(key, false);
-                    }
-
-                    if (row != null)
-                    {
-                        byte[] rowSerialized = Utf8Json.JsonSerializer.Serialize<T>(row, StandardResolver.AllowPrivate);
-                        jsonWriter.WriteRaw(rowSerialized);
-                        if (i != allKeys.Count - 1)
-                        {
-                            jsonWriter.WriteValueSeparator();
-                        }
-                    }
-                }
-
-                jsonWriter.WriteEndArray();
-                jsonWriter.WriteEndObject();
-
-                byte[] bytes = jsonWriter.ToUtf8ByteArray();
-                bytes = Utf8Json.JsonSerializer.PrettyPrintByteArray(bytes);
-
-                var stream = File.Create(TempFilePath);
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Dispose();
+                File.WriteAllText(TableFilePathAbsolute, serializedDb);
             }
 
-            File.Delete(FilePath);
-            File.Copy(TempFilePath, FilePath);
-
-            AssetDatabase.ImportAsset(unityProjectFilePath);
+            AssetDatabase.ImportAsset(tableFilePathUnityProject);
             SlugDBBrowser.Refresh();
 
-            keysDeleted.Clear();
-            keysAdded.Clear();
+            BuildKeysFile();
         }
 
         [Button]
@@ -261,9 +175,9 @@ namespace SlugDB
             }
             classFile += "}\n";
 
-            File.WriteAllText(Table<Person>.KeysPath, classFile);
+            File.WriteAllText(Table<Person>.KeysFilePathAbsolute, classFile);
 
-            AssetDatabase.ImportAsset("Assets/" + typeof(T).ToString() + "_keys.cs");
+            AssetDatabase.ImportAsset(tableFilePathUnityProject);
         }
 #endif
         #endregion
