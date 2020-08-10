@@ -88,6 +88,7 @@ namespace SlugDB
             Table<T>.Rows.Add(newRow);
 
             // TODO do I need uids?
+            // yes I do
             //nextId++;
 
             Table<T>.SaveToDisk(SaveAlgorythm.UnityJsonUtility);

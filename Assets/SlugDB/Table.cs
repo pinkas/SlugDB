@@ -131,13 +131,6 @@ namespace SlugDB
 #if UNITY_EDITOR
 
         [Button]
-        public static void SaveToDiskGen1()
-        {
-            string serializedDb = JsonUtility.ToJson(Rows, true);
-            File.WriteAllText(TableFilePathAbsolute, serializedDb);
-        }
-
-        [Button]
         public static void SaveToDisk(SaveAlgorythm saveAlgorythm)
         {
             // other save styles on the 'experimental' branch
