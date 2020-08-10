@@ -25,8 +25,8 @@ public class Tester : OdinEditorWindow
     
     public void CreatePersonTableWithXentries()
     {
-        Table<Person>.Rows.Clear();
         Table<Person>.keysAdded.Clear();
+        Table<Person>.keysDeleted = Table<Person>.GetAllKeys();
 
         for (int i = 0; i < quantityToAddToDb; i++)
         {
@@ -36,7 +36,7 @@ public class Tester : OdinEditorWindow
             Person person = new Person(prettyName)
             {
                 age = UnityEngine.Random.Range(1, 99),
-                nickName = Regex.Replace(Path.GetTempFileName(), "[0-9]", ""),
+                nickName = Regex.Replace(Path.GetRandomFileName(), "[0-9]", ""),
                 height = UnityEngine.Random.Range(30, 210),
             };
           
@@ -44,7 +44,13 @@ public class Tester : OdinEditorWindow
             Table<Person>.Rows.Add(person);
         }
     
-        Table<Person>.SaveToDisk(SaveAlgorythm.Legacy);
+        Table<Person>.SaveToDisk(saveAlgo);
+    }
+
+    [Button]
+    public static void GetAllKeys()
+    {
+        Table<Person>.GetAllKeys();
     }
 
     [Button]

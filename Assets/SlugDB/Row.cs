@@ -100,7 +100,7 @@ namespace SlugDB
             //nextId++;
 
             Table<T>.keysAdded.Add(newRow, key);
-            Table<T>.SaveToDisk(SaveAlgorythm.Legacy);
+            Table<T>.SaveToDisk(SaveAlgorythm.UnityJsonUtility);
         }
 
         [ShowInInspector, ValueDropdown(nameof(GetAllKeys)), BoxGroup("Delete Row")]
