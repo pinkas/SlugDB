@@ -11,7 +11,7 @@ using Utf8Json.Resolvers;
 namespace SlugDB
 {
     /// <summary>
-    /// @@@@@@@ TODO Add description TODO @@@@@@@
+    /// The table contains your rows and utilities (some editor only) to save/load/find
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable, InlineProperty, HideReferenceObjectPicker, HideDuplicateReferenceBox]
@@ -22,15 +22,16 @@ namespace SlugDB
             rows = new RowList<T>();
         }
 
+        public static List<T> Rows => rows.value;
         private static RowList<T> rows = new RowList<T>();
-        public static List<T> Rows => rows.rows;
 
         // TODO better name for keysAdded and keysDeleted - did that 2 months ago and looking at the name I have no idea what it actually does
         public static Dictionary<T, string> keysAdded = new Dictionary<T, string>();
         public static List<string> keysDeleted = new List<string>();
 
-        public static string FilePath => filePath;
-        private static readonly string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table.txt");
+        public static string FilePath => absoluteFilePath;
+        private static readonly string unityProjectFilePath = Path.Combine("Assets", typeof(T).ToString() + "_table.txt");
+        private static readonly string absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), unityProjectFilePath);
 
         public static string TempFilePath => tempFilePath;
         private static readonly string tempFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", typeof(T).ToString() + "_table_temp.txt");
@@ -41,7 +42,6 @@ namespace SlugDB
         private static readonly string name = typeof(T) + "Table";
 
 
-        // TODO talk about the fact that here it's loading everything as opposed to the GetAllKeys approach which streams through the fill to 'just' get the keys
         public static void Load()
         {
 
@@ -163,8 +163,6 @@ namespace SlugDB
         [Button]
         public static void SaveToDisk(SaveAlgorythm saveAlgorythm)
         {
-            DateTime time = DateTime.Now;
-
             File.Delete(TempFilePath);
 
             List<string> allKeys = GetAllKeys();
@@ -233,16 +231,12 @@ namespace SlugDB
 
             File.Delete(FilePath);
             File.Copy(TempFilePath, FilePath);
-            Debug.LogError(DateTime.Now - time);
 
-            //TODO the path of the table should come from only place. duplicate
-            //AssetDatabase.ImportAsset("Assets/" + typeof(T).ToString() + "_table.txt");
-
+            AssetDatabase.ImportAsset(unityProjectFilePath);
             SlugDBBrowser.Refresh();
 
             keysDeleted.Clear();
             keysAdded.Clear();
-
         }
 
         [Button]
@@ -275,10 +269,14 @@ namespace SlugDB
         #endregion
     }
 
+    /// <summary>
+    /// Class necessary because Unity Json Utility doesn't support Lists
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class RowList<T> where T : Row
     {
-        public List<T> rows = new List<T>();
+        public List<T> value = new List<T>();
     }
 
     public enum SaveAlgorythm

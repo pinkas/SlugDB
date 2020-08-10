@@ -14,6 +14,11 @@ public class SlugDBBrowser : OdinMenuEditorWindow
         GetWindow<SlugDBBrowser>();
     }
 
+    public static void Refresh()
+    {
+        GetWindow<SlugDBBrowser>().ForceMenuTreeRebuild();
+    }
+
     public static void ForceClose()
     {
         GetWindow<SlugDBBrowser>().Close();
