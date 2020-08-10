@@ -7,7 +7,7 @@
             "age": 36,
             "height": 90,
             "partner": {
-                "uid": 0
+                "prettyName": "hzijmmxxda"
             }
         },
         {
@@ -17,7 +17,7 @@
             "age": 45,
             "height": 54,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -27,7 +27,7 @@
             "age": 3,
             "height": 133,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -37,7 +37,7 @@
             "age": 87,
             "height": 52,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -47,7 +47,7 @@
             "age": 85,
             "height": 31,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -57,7 +57,7 @@
             "age": 33,
             "height": 151,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -67,7 +67,7 @@
             "age": 3,
             "height": 180,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -77,7 +77,7 @@
             "age": 76,
             "height": 83,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -87,7 +87,7 @@
             "age": 37,
             "height": 132,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         },
         {
@@ -97,7 +97,7 @@
             "age": 38,
             "height": 152,
             "partner": {
-                "uid": 0
+                "prettyName": ""
             }
         }
     ]

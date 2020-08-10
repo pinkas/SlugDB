@@ -39,32 +39,24 @@ namespace SlugDB
     [Serializable, InlineProperty, HideReferenceObjectPicker]
     public class RowReference<T> where T : Row
     {
-        [HorizontalGroup("1")]
-        [VerticalGroup("1/1")]
-        [SerializeField, ReadOnly]
-        private int uid;
-        
-        [VerticalGroup("1/1")]
-        [ShowInInspector, ReadOnly]
-        //TODO really not performance friendly
-        private string prettyName => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid).PrettyName;
+        [HideLabel, ReadOnly, SerializeField, HorizontalGroup]
+        private string prettyName;
 
-        public T Get => Table<T>.Rows.FirstOrDefault(p => p.Uid == uid);
+        // TODO bring back serialization by UID (int) to avoid excessive string comparisons
+        public T Get => Table<T>.Rows.FirstOrDefault(p => p.PrettyName == prettyName);
 
 #if UNITY_EDITOR
-        [VerticalGroup("1/2")]
-        [Button(18)]
+        [Button(18), HorizontalGroup]
         public void Pick()
         {
             GenericSelector<string> selector = new GenericSelector<string>("", false, item => item, Table<T>.GetAllKeys());
 
             var window = selector.ShowInPopup();
-            selector.SelectionConfirmed += selection => this.uid = Table<T>.Find(selection.FirstOrDefault(), true).Uid;
+            selector.SelectionConfirmed += selection => this.prettyName = Table<T>.Find(selection.FirstOrDefault(), true).PrettyName;
             selector.EnableSingleClickToSelect();
         }
 
-        [VerticalGroup("1/2")]
-        [Button(18)]
+        [Button(18), HorizontalGroup]
         public void Focus()
         {
             var item = SlugDBBrowser.Tree.GetMenuItem($"{typeof(T)}Table/{prettyName}");
