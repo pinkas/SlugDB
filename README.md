@@ -1,7 +1,7 @@
 # SlugDB
 
 
-The SlugDB is a database solution for Unity (**you'll need [Odin](https://odininspector.com/) to use it**.
+The SlugDB is a database solution for Unity, **you'll need [Odin](https://odininspector.com/) to use it**.
 SlugDB's goal is to combine Unity's powerfull editor scripting with a traditional database approach (think MySQL). Most of the heavy lifting in terms of editor scripting will be left to Odin and will allow us to edit json text files in the Unity.
 
 ### Core concepts
