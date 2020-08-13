@@ -25,7 +25,7 @@ public class Person : Row
 }
 ```
 
-### The Browser window:
+### The Browser window
 
 Allow you to add rows, browse/edit your data. Don't forget to hit save when done! (Will either implement auto save or tint the window when a change is detected very soon)
 
@@ -50,7 +50,7 @@ Accessing a row by code:
 ![CodeCompletion Gif](ReadmeResources/codeCompletion.gif)
 
 
-### Notes:
+### Notes
 
 * It's still very much a work in progress
 * At the moment loading a table loads its entierty. So every row is deserialized and goes into memory.  The experimental branch looks at pure streaming and would fix that issue but it's not ready yet.
