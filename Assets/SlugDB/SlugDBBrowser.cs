@@ -1,6 +1,5 @@
 ﻿using Sirenix.OdinInspector.Editor;
 using UnityEditor;
-using System.Linq;
 using SlugDB;
 
 public class SlugDBBrowser : OdinMenuEditorWindow
@@ -46,6 +45,7 @@ public class SlugDBBrowser : OdinMenuEditorWindow
         // TODO - Whenever creating a Table it needs to be explicitely added here. Probably avoidable.
 
         AddTable<Person>();
+        AddTable<Animal>();
 
         // super slow when dealing with big tables
         //tree.SortMenuItemsByName();
@@ -82,6 +82,7 @@ public class SlugDBBrowser : OdinMenuEditorWindow
         //tree.SortMenuItemsByName();
     }
 
+    /*
     private void OnSelectionChanged(SelectionChangedType obj)
     {
         if (obj == SelectionChangedType.ItemAdded)
@@ -100,4 +101,5 @@ public class SlugDBBrowser : OdinMenuEditorWindow
             }
         }
     }
+    */
 }

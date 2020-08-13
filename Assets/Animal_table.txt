@@ -1,0 +1,34 @@
+{
+    "value": [
+        {
+            "prettyName": "Lion",
+            "uid": 0,
+            "behavior": 1,
+            "weight": 50,
+            "photo": {
+                "guid": "",
+                "friendlyName": ""
+            }
+        },
+        {
+            "prettyName": "Monkey",
+            "uid": 0,
+            "behavior": 2,
+            "weight": 20,
+            "photo": {
+                "guid": "",
+                "friendlyName": ""
+            }
+        },
+        {
+            "prettyName": "Platypus",
+            "uid": 0,
+            "behavior": 3,
+            "weight": 6,
+            "photo": {
+                "guid": "",
+                "friendlyName": ""
+            }
+        }
+    ]
+}
