@@ -137,7 +137,7 @@ namespace SlugDB
             if (saveAlgorythm == SaveAlgorythm.UnityJsonUtility)
             {
                 string serializedDb = JsonUtility.ToJson(rows, prettyPrint: true);
-                File.WriteAllText(TableFilePathAbsolute, serializedDb);
+                WriteToUnityProject(TableFilePathAbsolute, serializedDb);
             }
 
             AssetDatabase.ImportAsset(tableFilePathUnityProject);
@@ -164,13 +164,24 @@ namespace SlugDB
                     continue;
                 }
 
-                classFile += $"    public static {className} {item.PrettyName} => Table<{className}>.Find(\"{item.PrettyName}\", false);\n";
+                classFile += $"    public static {className} {item.PrettyName} => Find(\"{item.PrettyName}\", false);\n";
             }
             classFile += "}\n";
 
-            File.WriteAllText(Table<Person>.KeysFilePathAbsolute, classFile);
+            WriteToUnityProject(KeysFilePathAbsolute, classFile);
+            AssetDatabase.ImportAsset(KeysFilePathUnityProject);
+        }
 
-            AssetDatabase.ImportAsset(tableFilePathUnityProject);
+        private static void WriteToUnityProject(string path, string content)
+        {
+            try
+            {
+                File.WriteAllText(path, content);
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"{e}\n{e.StackTrace}");
+            }
         }
 #endif
         #endregion
