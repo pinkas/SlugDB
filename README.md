@@ -45,10 +45,13 @@ This will allow you to that:
 
 
 ### Accessing a row by code
-Accessing a row by code:
 
 ![CodeCompletion Gif](ReadmeResources/codeCompletion.gif)
 
+### Searching
+```c#
+IEnumerable<Animal> heavyAnimals = Table<Animal>.Rows.Where( animal => animal.weight > 5 );
+```
 
 ### Notes
 
