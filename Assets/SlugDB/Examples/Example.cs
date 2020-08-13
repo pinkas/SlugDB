@@ -2,7 +2,7 @@
 using System;
 using SlugDB;
 
-[Serializable, InlineProperty, HideReferenceObjectPicker]
+[Serializable]
 public partial class Person : Row
 {
     public string nickName;
@@ -22,6 +22,31 @@ public partial class Person : Row
     }
 }
 
-[Serializable, InlineProperty, HideReferenceObjectPicker, HideDuplicateReferenceBox]
+[Serializable]
 public class PersonReference : RowReference<Person> {}
 // That's it ... !
+
+#region Animal Example
+
+[Serializable]
+public class Animal : Row
+{
+    public AnimalBehavior behavior;
+    public int weight;
+    public ResourcesReference photo;
+
+    public Animal(string prettyName)
+    {
+        this.prettyName = prettyName;
+    }
+}
+
+public enum AnimalBehavior
+{
+    Cuddly,
+    Grumpy,
+    Naughty,
+    AlwaysHungry,
+}
+#endregion
+

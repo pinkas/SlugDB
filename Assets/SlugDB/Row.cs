@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace SlugDB
 {
     // TODO add validation
-    [Serializable]
+    [SlugRow]
     public class Row
     {
         [SerializeField, ReadOnly, HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
@@ -105,9 +105,9 @@ namespace SlugDB
 
         [PropertySpace, PropertyOrder(10)]
         [Button(30)]
-        public void Save(SaveAlgorythm saveAlgorythm)
+        public void Save()
         {
-            Table<T>.SaveToDisk(saveAlgorythm);
+            Table<T>.SaveToDisk(SaveAlgorythm.UnityJsonUtility);
             Table<T>.BuildKeysFile(); 
         }
 
