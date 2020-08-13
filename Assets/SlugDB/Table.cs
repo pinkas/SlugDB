@@ -37,7 +37,7 @@ namespace SlugDB
         public static void Load()
         {
 #if UNITY_EDITOR
-         //   AssemblyReloadEvents.beforeAssemblyReload += SaveAndExport;
+            AssemblyReloadEvents.beforeAssemblyReload += ()=> { SaveToDisk(); };
 #endif
             if (!File.Exists(TableFilePathAbsolute))
             {
@@ -131,7 +131,7 @@ namespace SlugDB
 #if UNITY_EDITOR
 
         [Button]
-        public static void SaveToDisk(SaveAlgorythm saveAlgorythm)
+        public static void SaveToDisk(SaveAlgorythm saveAlgorythm = SaveAlgorythm.UnityJsonUtility)
         {
             // other save styles on the 'experimental' branch
             if (saveAlgorythm == SaveAlgorythm.UnityJsonUtility)
