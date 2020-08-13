@@ -17,7 +17,7 @@ namespace SlugDB
         protected string prettyName;
         public string PrettyName => prettyName;
 
-        [ReadOnly, SerializeField, TableColumnWidth(10), Required]
+        [ReadOnly, TableColumnWidth(10), Required]
         [HorizontalGroup("1/1"), BoxGroup("1", showLabel: false)]
         protected int uid = 0;
         public int Uid => uid;

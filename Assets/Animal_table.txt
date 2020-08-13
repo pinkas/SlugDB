@@ -2,29 +2,35 @@
     "value": [
         {
             "prettyName": "Lion",
-            "uid": 0,
             "behavior": 1,
             "weight": 50,
             "photo": {
-                "guid": "",
-                "friendlyName": ""
+                "guid": "74fd94e6d32d42a46afa227c10c11f03",
+                "friendlyName": "chrome_2020-08-13_17-06-05"
             }
         },
         {
             "prettyName": "Monkey",
-            "uid": 0,
             "behavior": 2,
             "weight": 20,
+            "photo": {
+                "guid": "215118d8474242845ae65eff6636c23a",
+                "friendlyName": "chrome_2020-08-13_17-06-32"
+            }
+        },
+        {
+            "prettyName": "Platypus",
+            "behavior": 3,
+            "weight": 6,
             "photo": {
                 "guid": "",
                 "friendlyName": ""
             }
         },
         {
-            "prettyName": "Platypus",
-            "uid": 0,
-            "behavior": 3,
-            "weight": 6,
+            "prettyName": "Cat",
+            "behavior": 0,
+            "weight": 4,
             "photo": {
                 "guid": "",
                 "friendlyName": ""

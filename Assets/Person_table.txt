@@ -2,7 +2,6 @@
     "value": [
         {
             "prettyName": "Marge",
-            "uid": 0,
             "nickName": "",
             "age": 40,
             "height": 0,
@@ -12,7 +11,6 @@
         },
         {
             "prettyName": "Homer",
-            "uid": 0,
             "nickName": "",
             "age": 42,
             "height": 0,
@@ -22,7 +20,6 @@
         },
         {
             "prettyName": "Bart",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,
@@ -32,7 +29,6 @@
         },
         {
             "prettyName": "Lisa",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,
@@ -42,7 +38,6 @@
         },
         {
             "prettyName": "Maggie",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,
@@ -52,7 +47,6 @@
         },
         {
             "prettyName": "Moe",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,
@@ -62,7 +56,6 @@
         },
         {
             "prettyName": "Barney",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,
@@ -72,7 +65,6 @@
         },
         {
             "prettyName": "Krusty",
-            "uid": 0,
             "nickName": "",
             "age": 0,
             "height": 0,

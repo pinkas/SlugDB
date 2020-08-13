@@ -15,7 +15,7 @@ public class ResourcesReference
     [SerializeField, ReadOnly]
     string guid;
 
-    [SerializeField]
+    [SerializeField, ReadOnly]
     string friendlyName = "";
 
     public AsyncOperationHandle<T> Load<T> () where T : UnityEngine.Object
